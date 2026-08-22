@@ -10,7 +10,7 @@ Selecting the wrong crop for a specific soil and climate profile leads to reduce
 
 
 # 🏗️ System Architecture
-
+```text
 +-------------------------------------------------------------------------------------------------+
 |                                    END-TO-END SYSTEM PIPELINE                                   |
 +-------------------------------------------------------------------------------------------------+
@@ -31,7 +31,7 @@ Selecting the wrong crop for a specific soil and climate profile leads to reduce
 |   • Displays predicted crop (e.g., Rice, Coffee, Maize) with input summary                      |
 |                                                                                                 |
 +-------------------------------------------------------------------------------------------------+
-
+```
 
 ## 📊 Performance Metrics
 
