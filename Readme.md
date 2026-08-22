@@ -2,7 +2,7 @@
 
 An interactive machine learning web application that predicts the optimal crop to cultivate based on soil nutrient levels and meteorological parameters. Built with **Scikit-Learn**, serialized with **Joblib**, and served via **Streamlit**.
 
-🔗 **Live Application:** [View Live Streamlit App](https://share.streamlit.io/your-username/crop-recommendation-app)
+🔗 **Live Application:** [View Live Streamlit App](https://ml-crop-recommendation-modelgit-1827.streamlit.app/)
 
 
 # 📌 Problem Overview
