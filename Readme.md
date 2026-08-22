@@ -92,7 +92,7 @@ Launch the web application:
 
 Bash
 streamlit run app.py
-
+```
 
 🛠️ Tech Stack
 Language: Python
@@ -100,3 +100,13 @@ Data Manipulation: Pandas, NumPy
 Machine Learning: Scikit-Learn (Pipeline, StandardScaler, RandomForestClassifier)
 Model Serialization: Joblib
 Web UI & Deployment: Streamlit Community Cloud
+
+## 📊 Business Intelligence & Monitoring
+
+### Pre-Modeling Exploratory Dashboard (Training Domain)
+Explores soil chemistry, climate boundaries, and crop distributions across 2,200 agricultural samples:
+* **NPK Nutrient Profile Matrix:** Heatmap mapping critical Nitrogen, Phosphorus, and Potassium requirements across 22 distinct crop categories.
+* **Climate Quadrant:** Temperature vs. Rainfall scatter distribution with humidity-weighted bubble scaling to isolate microclimate dependencies.
+* **Soil pH Boxplots:** Interquartile range (IQR) analysis identifying tolerance boundaries and outlier resilience per crop.
+
+🔗 **[Launch Interactive EDA Dashboard](https://public.tableau.com/views/CropRecommendationEDA/ClimateQuadrant?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)**
