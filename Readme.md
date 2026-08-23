@@ -54,12 +54,16 @@ The model was evaluated on an **80/20 stratified test split** (440 unseen sample
 ## 📂 Repository Structure
 
 ```text
-├── 01_model_training.ipynb    # Data audit, validation, and pipeline training
+├── .streamlit                 # Streamlit background color, font configuration
+├── Assets                     # Screenshot
+├── Tableau                    # Tableau Dashboard in .twbx format
+├── .gitignore
+├── Model Training.ipynb       # Data audit, validation, and pipeline training
+├── README.md                  # Project documentation
+├── Testing model.ipynb        # For testing if model works or not
 ├── app.py                     # Streamlit frontend application
-├── crop_recommendation.csv    # Source agricultural dataset (2,200 rows)
-├── crop_pipeline.pkl          # Serialized Scikit-Learn pipeline artifact
 ├── requirements.txt           # Project dependencies
-└── README.md                  # Project documentation
+└── trained1stModel.pkl        # Serialized Scikit-Learn pipeline artifact
 ```
 
 🚀 Local Installation & Setup
@@ -69,8 +73,8 @@ Clone the repository:
 
 ```
 Bash
-git clone [https://github.com/your-username/crop-recommendation-app.git](https://github.com/your-username/crop-recommendation-app.git)
-cd crop-recommendation-app
+git clone [https://github.com/Ayush91827/ML-Crop-Recommendation-Model.git](https://github.com/Ayush91827/ML-Crop-Recommendation-Model.git)
+cd ML-Crop-Recommendation-Model
 ```
 
 Create and activate a virtual environment:
