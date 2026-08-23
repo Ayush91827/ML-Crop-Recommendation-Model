@@ -60,36 +60,37 @@ The model was evaluated on an **80/20 stratified test split** (440 unseen sample
 ├── crop_pipeline.pkl          # Serialized Scikit-Learn pipeline artifact
 ├── requirements.txt           # Project dependencies
 └── README.md                  # Project documentation
-
+```
 
 🚀 Local Installation & Setup
 
 
 Clone the repository:
 
+```
 Bash
 git clone [https://github.com/your-username/crop-recommendation-app.git](https://github.com/your-username/crop-recommendation-app.git)
 cd crop-recommendation-app
-
+```
 
 Create and activate a virtual environment:
-
+```
 Bash
 python -m venv venv
 # On Windows:
 venv\Scripts\activate
 # On macOS/Linux:
 source venv/bin/activate
-
+```
 
 Install dependencies:
-
+```
 Bash
 pip install -r requirements.txt
-
+```
 
 Launch the web application:
-
+```
 Bash
 streamlit run app.py
 ```
