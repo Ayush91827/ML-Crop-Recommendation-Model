@@ -110,3 +110,9 @@ Explores soil chemistry, climate boundaries, and crop distributions across 2,200
 * **Soil pH Boxplots:** Interquartile range (IQR) analysis identifying tolerance boundaries and outlier resilience per crop.
 
 🔗 **[Launch Interactive EDA Dashboard](https://public.tableau.com/views/CropRecommendationEDA/ClimateQuadrant?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)**
+
+### 🖥️ Interactive Dashboard Preview
+
+[![Tableau Dashboard Preview](./Assets/Screenshot 2026-08-23 002049.png.)](https://public.tableau.com/views/Crop_EDA_Dashboard/NPKNutrientProfiles?:showVizHome=no&:embed=true)
+
+> 💡 **Click the image above** to open and interact with the full live dashboard on Tableau Public.
