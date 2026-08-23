@@ -118,6 +118,7 @@ Explores soil chemistry, climate boundaries, and crop distributions across 2,200
 
 ### 🖥️ Interactive Dashboard Preview
 
-[![Tableau Dashboard Preview](./Assets/Screenshot 2026-08-23 002049.png.)](https://public.tableau.com/views/CropRecommendationEDA/ClimateQuadrant?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+<img width="1824" height="761" alt="Screenshot 2026-08-23 002049" src="https://github.com/user-attachments/assets/5593f9fd-f1f1-4c63-b809-19f5eaf71923" />(https://public.tableau.com/views/CropRecommendationEDA/ClimateQuadrant?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+
 
 > 💡 **Click the image above** to open and interact with the full live dashboard on Tableau Public.
