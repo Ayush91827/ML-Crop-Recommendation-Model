@@ -62,6 +62,7 @@ The model was evaluated on an **80/20 stratified test split** (440 unseen sample
 ├── README.md                  # Project documentation
 ├── Testing model.ipynb        # For testing if model works or not
 ├── app.py                     # Streamlit frontend application
+├── init_db.py                 # Generates 500 mock record dataset, then updates dataset with new records as people use the Model
 ├── requirements.txt           # Project dependencies
 └── trained1stModel.pkl        # Serialized Scikit-Learn pipeline artifact
 ```
