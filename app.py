@@ -1,10 +1,20 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import time
+from datetime import datetime
+from sqlalchemy import create_engine, text
+import plotly.express as px
+import streamlit.components.v1 as components
 
-if "history" not in st.session_state:
-    st.session_state["history"] = []
-    
+DATABASE_URL=st.secrets["postgres"]["url"]
+
+@st.cache_resource()
+def get_db_engine():
+    return create_engine(DATABASE_URL)
+
+engine=get_db_engine()
+
 @st.cache_resource()
 def load_model():
     return joblib.load('trained1stmodel.pkl')
@@ -12,6 +22,45 @@ def load_model():
 model=load_model()
 ranges=model.feature_ranges
 
+#Telemetry Loader
+@st.cache_data(ttl=60)
+def load_telemetry():
+    with engine.connect() as conn:
+        return pd.read_sql(
+            "SELECT * FROM prediction_telemetry ORDER BY timestamp DESC LIMIT 500;",
+            conn
+        )
+
+#Logging Function
+def log_prediction_to_db(inputs,prediction,latency,status):
+    """Inserts prediction record into Cloud PostgreSQL"""
+    query=text("""INSERT INTO prediction_telemetry (
+            timestamp, predicted_crop, latency_ms, user_status,
+            input_n, input_p, input_k, input_temp,
+            input_humidity, input_ph, input_rainfall
+        ) VALUES (
+            :timestamp, :predicted_crop, :latency_ms, :user_status,
+            :input_n, :input_p, :input_k, :input_temp,
+            :input_humidity, :input_ph, :input_rainfall
+        )""")
+
+    with engine.connect() as conn:
+        conn.execute(query, {
+            "timestamp": datetime.now(),
+            "predicted_crop": prediction,
+            "latency_ms": latency,
+            "user_status": status,
+            "input_n": inputs["N"],
+            "input_p": inputs["P"],
+            "input_k": inputs["K"],
+            "input_temp": inputs["temp"],
+            "input_humidity": inputs["humidity"],
+            "input_ph": inputs["ph"],
+            "input_rainfall": inputs["rainfall"]
+        })
+        conn.commit()
+
+#UI Setup
 st.title("Crop Recommender")
 st.sidebar.header("Input Soil & Climate Values")
 
@@ -31,35 +80,73 @@ rainfall = st.sidebar.slider("Rainfall (mm)", float(ranges["rainfall"][0]), floa
 #ph = st.slider("Soil pH", float(ranges["ph"][0]), float(ranges["ph"][1]), 6.5)
 #rainfall = st.slider("Rainfall (mm)", float(ranges["rainfall"][0]), float(ranges["rainfall"][1]), 202.9)
 
+#Prediction Button
 if st.button("Recommend Crop"):
-    input_df=pd.DataFrame([{
-        "N":N,
-        "P":P,
-        "K":K,
-        "temperature":temperature,
-        "humidity": humidity,
-        "ph": ph,
-        "rainfall": rainfall
-    }])
-    prediction=model.predict(input_df)[0]
-    st.success(f"Recommended: {prediction}")
-        
-    st.session_state["history"].append({
-        "N": N, "P": P, "K": K,
-        "temperature": temperature,
-        "humidity": humidity,
-        "ph": ph,
-        "rainfall": rainfall,
-        "crop": prediction
-    })
+    start_time=time.time()
+
+    inputs={
+        "N":N,"P":P,"K":K, "temp":temperature, "humidity":humidity, "ph":ph, "rainfall":rainfall
+    }
+
+    try:
+        features=[[N,P,K,temperature,humidity,ph,rainfall]]
+        prediction=model.predict(features)[0]
+        status="Success"
+        st.success(f"Recommended Crop:{prediction}")
+
+    except Exception as e:
+        prediction="None"
+        status="Validation Error"
+        st.error(f"Error:{e}")
+
+    latency_ms=round((time.time()-start_time)*1000,2)
+    log_prediction_to_db(inputs,prediction,latency_ms,status)
+
+#Telemetry Dashboard
+st.subheader("📊 Telemetry Analytics: Predictions by Category")
+df=load_telemetry()
+if not df.empty:
+    crop_counts=df["predicted_crop"].value_counts().reset_index()
+    crop_counts.columns=["Crop","Count"]
+
+    fig = px.bar(
+        crop_counts,
+        x="Count",
+        y="Crop",
+        orientation="h",
+        color="Count",
+        color_continuous_scale="Greens",
+        title="Total Prediction Inferences by Crop"
+    ) 
+    fig.update_layout(
+        yaxis={"categoryorder":"total ascending"},
+        margin=dict(l=20,r=20,t=40,b=20)
+    )
+    st.plotly_chart(fig, width='stretch')
+
+    st.subheader("Prediction Latency Over Time")
+    latency_fig=px.line(
+        df.sort_values("timestamp"),
+        x="timestamp",
+        y="latency_ms",
+        markers=True,
+        title="Latency Trend (ms)"
+    )
+    latency_fig.update_layout(
+        xaxis_title="Timestamp",
+        yaxis_title="Latency (ms)",
+        margin=dict(l=20,r=20,t=40,b=20)
+    )
+    st.plotly_chart(latency_fig, width='stretch')
+
+else:
+    st.info("No telemetry data available yet.")
 
 
-if st.session_state["history"]:
-    st.info("📜 Prediction History:")
-    history_df = pd.DataFrame(st.session_state["history"])
-    st.dataframe(history_df)
+st.subheader("🔗Exploratory Data Analysis Dashboard Access")
+st.markdown("[🌐 Open Full Dashboard](https://public.tableau.com/views/CropRecommendationEDA/PHToleranceDistribution?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)", unsafe_allow_html=True)
+components.iframe("<div class='tableauPlaceholder' id='viz1787588586813' style='position: relative'><noscript><a href='#'><img alt=' ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Cr&#47;CropRecommendationEDA&#47;PHToleranceDistribution&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='CropRecommendationEDA&#47;PHToleranceDistribution' /><param name='tabs' value='yes' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Cr&#47;CropRecommendationEDA&#47;PHToleranceDistribution&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1787588586813');                    var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                    var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>", height=800, scrolling=True)
 
-if st.button("Clear History"):
-    st.session_state["history"] = []
-    st.info("History cleared ✅")
-    st.rerun()
+st.subheader("🔗Post Model Deployment Dashboard Access")
+st.markdown("[🌐 Open Full Dashboard](https://public.tableau.com/views/ModelPredictedPostProductionDatasetAnalysis/InputDriftAnalysis?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)", unsafe_allow_html=True)
+components.iframe("<div class='tableauPlaceholder' id='viz1787588835623' style='position: relative'><noscript><a href='#'><img alt=' ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Mo&#47;ModelPredictedPostProductionDatasetAnalysis&#47;InputDriftAnalysis&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='ModelPredictedPostProductionDatasetAnalysis&#47;InputDriftAnalysis' /><param name='tabs' value='yes' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Mo&#47;ModelPredictedPostProductionDatasetAnalysis&#47;InputDriftAnalysis&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1787588835623');                    var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                    var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>", height=800, scrolling=True)
